@@ -1,7 +1,14 @@
 import json
 import random
+import sqlite3
+
 
 print("Starting trading engine..!!!")
+
+con = sqlite3.connect("order_book.db")
+cur = con.cursor()
+cur.execute('CREATE TABLE IF NOT EXISTS orders (order_id INTEGER PRIMARY KEY, ticker TEXT, amount REAL, quantity REAL, side TEXT)')
+con.commit()
 
 
 class Order:
@@ -23,8 +30,19 @@ class OrderBook:
     def place_order(self, order):
         if order.side == 'buy':
             self.buy_book.append(order)
+            cur.execute(
+                'INSERT INTO orders (order_id, ticker, amount, quantity, side) VALUES (?, ?, ?, ?, ?)', order)
+            con.commit()
         if order.side == 'sell':
             self.sell_book.append(order)
+            cur.execute(
+                'INSERT INTO orders (order_id, ticker, amount, quantity, side) VALUES (?, ?, ?, ?, ?)', order)
+            con.commit()
+
+    def get_order_book_from_database():
+        cur.execute(
+            'SELECT order_id, ticker, amount, quantity, side FROM orders')
+        return cur.fetchall()
 
     def match_order(self, ord_id, amount, side, ticker):
         if side == 'buy':
@@ -53,9 +71,9 @@ if __name__ == "__main__":
     amount = int(input("Amount: "))
     quantity = int(input("Quantity: "))
     side = input("Side [buy/sell]: ")
-    ord_id = random.randint(100000, 999999)
+    order_id = random.randint(100000, 999999)
     order_book.place_order(
-        Order(ord_id, ticker, amount, quantity, side))
+        Order(order_id, ticker, amount, quantity, side))
 
     # for i in range(1, 100):
     #     if i % 2 == 0:
@@ -77,12 +95,14 @@ if __name__ == "__main__":
 
     # LOGGING ORDER_BOOK IN CONSOLE
 
-    def prRed(skk): return ("\033[91m {}\033[00m" .format(skk))
-    print("SELL ORDER")
-    for order in order_book.sell_book:
-        print(prRed(json.dumps(order.__dict__)))
+    order_book.get_order_book_from_database()
 
-    def prGreen(skk): return ("\033[92m {}\033[00m" .format(skk))
-    print("BUY ORDER")
-    for order in order_book.buy_book:
-        print(prGreen(json.dumps(order.__dict__)))
+    # def prRed(skk): return ("\033[91m {}\033[00m" .format(skk))
+    # print("SELL ORDER")
+    # for order in order_book.sell_book:
+    #     print(prRed(json.dumps(order.__dict__)))
+
+    # def prGreen(skk): return ("\033[92m {}\033[00m" .format(skk))
+    # print("BUY ORDER")
+    # for order in order_book.buy_book:
+    #     print(prGreen(json.dumps(order.__dict__)))

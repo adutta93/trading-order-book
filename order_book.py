@@ -21,7 +21,7 @@ class OrderBook:
         self.sell_book = []
 
     def place_order(self, order):
-        print("Type of order is", type(order))
+        # print("Type of order is", type(order))
         parsed_order = json.dumps(order.__dict__)
 
         if order.side == 'buy':
@@ -34,22 +34,24 @@ class OrderBook:
 
     def match_orders(self, order):
         # Sort buy and sell orders by price
-        om = order.amount
-        self.buy_book.sort(key=lambda order: order[om], reverse=True)
-        self.sell_book.sort(key=lambda order: order[om])
+        # om = order.amount
+        # self.buy_book.sort(key=lambda order: order[om], reverse=True)
+        # self.sell_book.sort(key=lambda order: order[om])
 
         # For buy order
         if order.side == 'buy':
             for sell_order in self.sell_book:
                 if order.ticker == sell_order.ticker and order.amount >= sell_order.amount:
-                    # Update order quantities
-                    sell_order.quantity -= order.quantity
-                    # Print order details
-                    print(
-                        f"Trade: {order.quantity} {order.ticker} at {sell_order.amount}")
+                    if sell_order.quantity >= order.quantity:
+                        # Update order quantities
+                        sell_order.quantity -= order.quantity
+                        # Print order details
+                        print(
+                            f"Trade: {order.quantity} {order.ticker} at {sell_order.amount}")
+
                     # Remove orders with zero quantity
-                    if sell_order.quantity == 0:
-                        self.sell_orders.pop(0)
+                    # if sell_order.quantity == 0:
+                    #     self.sell_book.pop(0)
                 else:
                     break
 
@@ -57,14 +59,16 @@ class OrderBook:
         if order.side == 'sell':
             for buy_order in self.buy_book:
                 if order.ticker == buy_order.ticker and order.amount <= buy_order.amount:
-                    # Update order quantities
-                    buy_order.quantity -= order.quantity
-                    # Print order details
-                    print(
-                        f"Trade: {order.quantity} {order.ticker} at {buy_order.amount}")
+                    if buy_order.quantity <= order.quantity:
+                        # Update order quantities
+                        buy_order.quantity -= order.quantity
+                        # Print order details
+                        print(
+                            f"Trade: {order.quantity} {order.ticker} at {buy_order.amount}")
+
                     # Remove orders with zero quantity
-                    if buy_order.quantity == 0:
-                        self.buy_orders.pop(0)
+                    # if buy_order.quantity == 0:
+                    #     self.buy_book.pop(0)
                 else:
                     break
 
@@ -91,23 +95,37 @@ if __name__ == "__main__":
 
     tickers = ['AMZN', 'MSFT', 'ZOHO', 'TCS', 'HDFC', 'BOFA']
 
-    for i in range(1, 5):
-        if i % 2 == 0:
-            ord_id = str(random.randint(100000, 999999))
-            ticker = random.choice(tickers)
-            amount = round(random.uniform(100, 400), 2)
-            quantity = random.randint(1, 9)
-            side = random.choice(['buy', 'sell'])
-            order_book.place_order(
-                Order(ord_id, ticker, amount, quantity, side))
-        else:
-            ord_id = str(random.randint(100000, 999999))
-            ticker = random.choice(tickers)
-            amount = round(random.uniform(100, 400), 2)
-            quantity = random.randint(1, 9)
-            side = random.choice(['buy', 'sell'])
-            order_book.place_order(
-                Order(ord_id, ticker, amount, quantity, side))
+    ord_id = str(random.randint(100000, 999999))
+    ticker = 'AMZN'
+    amount = 360
+    quantity = 6
+    side = 'buy'
+    order_book.place_order(Order(ord_id, ticker, amount, quantity, side))
+
+    ord_id = str(random.randint(100000, 999999))
+    ticker = 'AMZN'
+    amount = 360
+    quantity = 6
+    side = 'sell'
+    order_book.place_order(Order(ord_id, ticker, amount, quantity, side))
+
+    # for i in range(0, 5):
+    #     if i % 2 == 0:
+    #         ord_id = str(random.randint(100000, 999999))
+    #         ticker = random.choice(tickers)
+    #         amount = round(random.uniform(100, 400), 2)
+    #         quantity = random.randint(1, 9)
+    #         side = random.choice(['buy', 'sell'])
+    #         order_book.place_order(
+    #             Order(ord_id, ticker, amount, quantity, side))
+    #     else:
+    #         ord_id = str(random.randint(100000, 999999))
+    #         ticker = random.choice(tickers)
+    #         amount = round(random.uniform(100, 400), 2)
+    #         quantity = random.randint(1, 9)
+    #         side = random.choice(['buy', 'sell'])
+    #         order_book.place_order(
+    #             Order(ord_id, ticker, amount, quantity, side))
 
     # LOGGING ORDER_BOOK IN CONSOLE
-    # order_book.print_order_book()
+    order_book.print_order_book()
